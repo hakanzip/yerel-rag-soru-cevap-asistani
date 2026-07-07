@@ -1,0 +1,4 @@
+foundry-local-sdk
+openai
+sentence-transformers
+eval_type_backport
