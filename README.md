@@ -9,7 +9,7 @@ A small, fully local retrieval-augmented Q&A tool: no internet connection needed
 1. **Ingest** — files in `docs/` are split into paragraphs, each paragraph is embedded and written to a local SQLite database.
 2. **Retrieve** — your question is embedded the same way; the 3 closest chunks are found by cosine similarity.
 3. **Generate** — those chunks are passed as context to a locally-running LLM (`phi-3.5-mini` via [Microsoft Foundry Local](https://github.com/microsoft/Foundry-Local)) with a strict "answer only from this context" system prompt.
-4. **CLI** — `main.py` runs the ask-loop in your terminal until you type `quit`.
+4. **CLI** — `local-rag-qa ask` runs the ask-loop in your terminal until you type `quit`.
 
 ## Why local
 
@@ -24,28 +24,30 @@ brew install foundrylocal
 foundry service start
 foundry model download phi-3.5-mini
 
-# 2) Python environment
+# 2) Install the CLI (editable, until the PyPI release lands — see roadmap)
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 
-# 3) Index your documents, then ask
-python3 ingest.py      # embeds everything in docs/ into knowledge.db
-python3 main.py         # starts the Q&A loop
+# 3) Put your documents in docs/, then index and ask
+local-rag-qa ingest    # embeds everything in docs/ into knowledge.db
+local-rag-qa ask        # starts the Q&A loop
 ```
 
-> `foundry-local-sdk` uses the `X | None` type syntax, which needs Python ≥3.10 (or the `eval_type_backport` package already in `requirements.txt` on older versions).
+> `foundry-local-sdk` uses the `X | None` type syntax, which needs Python ≥3.10 (or the `eval_type_backport` package, already a conditional dependency in `pyproject.toml` on older versions).
 
 ## Project layout
 
 ```
 .
-├── docs/            # your knowledge base (.md / .txt files go here)
-├── common.py        # chunking, embedding, cosine-similarity helpers
-├── ingest.py        # docs/ -> chunks -> embeddings -> SQLite
-├── retrieve.py      # question -> embedding -> nearest chunks
-├── generate.py      # chunks + question -> Foundry Local -> answer
-├── main.py          # CLI loop
-├── requirements.txt
+├── docs/                       # your knowledge base (.md / .txt files go here)
+├── src/local_rag_qa/
+│   ├── cli.py                  # `local-rag-qa` entry point (ingest / ask)
+│   ├── common.py                # chunking, embedding, cosine-similarity helpers
+│   ├── ingest.py                 # docs/ -> chunks -> embeddings -> SQLite
+│   ├── retrieve.py               # question -> embedding -> nearest chunks
+│   ├── generate.py               # chunks + question -> Foundry Local -> answer
+│   └── main.py                    # interactive ask-loop
+├── pyproject.toml
 └── README.md
 ```
 
@@ -59,7 +61,8 @@ The original plan called for embedding via Foundry Local's `qwen3-embedding-0.6b
 - Embedding uses `sentence-transformers` rather than Foundry Local — revisit if/when Foundry Local ships an embedding model.
 - CLI only for now; a Streamlit/HTML UI, multi-language support, and answer-with-citation formatting are out of scope for v0.1.
 - No automated evaluation layer yet — correctness was checked manually.
-- Packaging (a `pip install`-able CLI) and an automated test suite are in progress — see [open issues](../../issues).
+- Packaged as a `pip install`-able CLI (`pyproject.toml` + `local-rag-qa` entry point); not yet published to PyPI — `pip install -e .` from a clone until then.
+- Automated tests cover the pure-logic helpers (chunking, cosine similarity); ingest/retrieve/generate aren't covered yet since they need a live Foundry Local instance.
 
 ## Contributing
 

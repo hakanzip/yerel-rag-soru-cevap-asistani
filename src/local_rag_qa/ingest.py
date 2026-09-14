@@ -2,7 +2,7 @@
 import json
 import os
 
-from common import DB_PATH, chunk_text, embed_text, get_connection
+from local_rag_qa.common import DB_PATH, chunk_text, embed_text, get_connection
 
 DOCS_DIR = "docs"
 

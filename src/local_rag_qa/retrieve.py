@@ -1,7 +1,8 @@
-"""Soruyu embed eder, SQLite'taki tüm parçalarla kosinüs benzerliği hesaplar, en iyi parçaları döndürür."""
+"""Soruyu embed eder, SQLite'taki tüm parçalarla kosinüs benzerliği hesaplar,
+en iyi parçaları döndürür."""
 import json
 
-from common import cosine_similarity, embed_text, get_connection
+from local_rag_qa.common import cosine_similarity, embed_text, get_connection
 
 
 def retrieve(question: str, top_k: int = 3) -> list[dict]:

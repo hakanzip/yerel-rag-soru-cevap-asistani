@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "local-rag-qa"
+version = "0.1.0"
+description = "A small, fully local retrieval-augmented Q&A CLI — no internet needed at query time, no data leaves your machine."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "Hakan Ataş" }]
+keywords = ["rag", "retrieval-augmented-generation", "local-llm", "cli", "privacy", "offline"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Indexing",
+]
+dependencies = [
+    "foundry-local-sdk>=0.1",
+    "openai>=1.0",
+    "sentence-transformers>=2.2",
+    "eval_type_backport; python_version < \"3.10\"",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/hakanzip/yerel-rag-soru-cevap-asistani"
+Issues = "https://github.com/hakanzip/yerel-rag-soru-cevap-asistani/issues"
+
+[project.scripts]
+local-rag-qa = "local_rag_qa.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/local_rag_qa"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

@@ -2,7 +2,7 @@
 from foundry_local import FoundryLocalManager
 from openai import OpenAI
 
-from common import FOUNDRY_CHAT_ALIAS
+from local_rag_qa.common import FOUNDRY_CHAT_ALIAS
 
 SYSTEM_PROMPT = (
     "Sen bir soru-cevap asistanısın. SADECE aşağıda verilen bağlamı kullanarak cevap ver. "

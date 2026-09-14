@@ -1,6 +1,6 @@
 """CLI döngüsü: soru al, ilgili parçaları bul, cevap üret, yazdır. 'quit' ile çık."""
-from generate import generate_answer
-from retrieve import retrieve
+from local_rag_qa.generate import generate_answer
+from local_rag_qa.retrieve import retrieve
 
 
 def main():
