@@ -1,5 +1,7 @@
 # Local RAG Q&A Assistant
 
+[![CI](https://github.com/hakanzip/yerel-rag-soru-cevap-asistani/actions/workflows/ci.yml/badge.svg)](https://github.com/hakanzip/yerel-rag-soru-cevap-asistani/actions/workflows/ci.yml)
+
 [🇹🇷 Türkçe README](README.tr.md)
 
 A small, fully local retrieval-augmented Q&A tool: no internet connection needed at query time, no data leaves your machine. Point it at a folder of documents, ask questions in natural language, and it answers *only* from what's in your documents — if the answer isn't there, it says so instead of making something up.
