@@ -1,62 +1,70 @@
-# Yerel RAG Soru-Cevap Asistanı
+# Local RAG Q&A Assistant
 
-## Amaç
-Küçük bir doküman kümesi üzerinde, internet bağlantısı olmadan, yerelde çalışan bir dil modeli kullanarak soru cevaplayan bir Q&A asistanı. Model uydurmaz: önce kullanıcının dokümanlarından ilgili parçayı bulur (retrieval), sonra sadece bu parçalara dayanarak cevap verir (generation). Bilgi dokümanlarda yoksa asistan bunu açıkça belirtir.
+[🇹🇷 Türkçe README](README.tr.md)
 
-## Nasıl çalışır (RAG akışı)
-1. **Ingest** — `docs/` içindeki dokümanlar paragraflara bölünür, her paragraf bir embedding vektörüne çevrilir ve metniyle birlikte SQLite'a yazılır.
-2. **Retrieve** — Kullanıcının sorusu da embed edilir; SQLite'taki tüm parça vektörleriyle kosinüs benzerliği hesaplanır ve en yakın 3 parça seçilir.
-3. **Generate** — Seçilen parçalar bağlam olarak sistem promptuna eklenir ("SADECE bu bağlamı kullan, bilmiyorsan bilmediğini söyle") ve Foundry Local üzerinde yerelde çalışan `phi-3.5-mini` modeline gönderilir.
-4. **CLI** — `main.py`, kullanıcıdan soru alıp bu üç adımı çalıştıran ve cevabı ekrana basan bir terminal döngüsüdür (`quit` ile çıkılır).
+A small, fully local retrieval-augmented Q&A tool: no internet connection needed at query time, no data leaves your machine. Point it at a folder of documents, ask questions in natural language, and it answers *only* from what's in your documents — if the answer isn't there, it says so instead of making something up.
 
-## Kullanılan Microsoft aracı: Foundry Local
-Cevap üretimi (generation) adımı tamamen **Foundry Local** üzerinden, yerelde çalışan `phi-3.5-mini` modeliyle yapılır. Foundry Local, Apple Silicon'da Metal ile GPU hızlandırması kullanan, OpenAI uyumlu bir yerel REST endpoint açar; bu projede `foundry-local-sdk` ile bu endpoint'e bağlanılıp standart `openai` Python SDK'sı üzerinden sohbet isteği gönderilir.
+## How it works
 
-### Not: embedding adımı hakkında kapsam sapması
-Planda embedding için Foundry Local'in `qwen3-embedding-0.6b` modeli kullanılması öngörülmüştü. Kurulum sırasında **Foundry Local'in güncel model kataloğunda hiçbir embedding modeli bulunmadığı** tespit edildi (`foundry model list --filter task=embedding` boş sonuç döndürüyor). Bu nedenle embedding adımı için, tamamen yerelde çalışan açık kaynaklı `sentence-transformers` (`all-MiniLM-L6-v2`, ~90 MB) kullanıldı. Bu değişiklik projenin "internet olmadan yerelde çalışma" hedefini bozmaz; yalnızca ilk model indirmesi internet gerektirir.
+1. **Ingest** — files in `docs/` are split into paragraphs, each paragraph is embedded and written to a local SQLite database.
+2. **Retrieve** — your question is embedded the same way; the 3 closest chunks are found by cosine similarity.
+3. **Generate** — those chunks are passed as context to a locally-running LLM (`phi-3.5-mini` via [Microsoft Foundry Local](https://github.com/microsoft/Foundry-Local)) with a strict "answer only from this context" system prompt.
+4. **CLI** — `main.py` runs the ask-loop in your terminal until you type `quit`.
 
-## Kurulum
+## Why local
+
+Foundry Local runs `phi-3.5-mini` behind an OpenAI-compatible REST endpoint, GPU-accelerated via Metal on Apple Silicon. Nothing about a question or a document ever leaves the machine — a good fit for private notes, internal docs, or just not wanting your queries logged by someone else's API.
+
+## Quickstart
+
 ```bash
-# 1) Foundry Local (Homebrew ile)
+# 1) Foundry Local (Homebrew)
 brew tap microsoft/foundrylocal
-brew trust --tap microsoft/foundrylocal   # resmi Microsoft deposu olduğu doğrulandıktan sonra
 brew install foundrylocal
-
-# 2) Servisi başlat
 foundry service start
-
-# 3) phi-3.5-mini modelini indir
 foundry model download phi-3.5-mini
 
-# 4) Python ortamı
+# 2) Python environment
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-```
-> Not: `foundry-local-sdk`, Python 3.9'da kullanılamayan `X | None` tip söz dizimini kullanıyor. Python 3.10 altındaysanız `eval_type_backport` paketi (requirements.txt'de mevcut) bunu otomatik düzeltir.
 
-## Çalıştırma
-```bash
-source .venv/bin/activate
-python3 ingest.py     # docs/ içeriğini embed edip knowledge.db'ye yazar (bir kere çalıştırılır)
-python3 main.py        # soru-cevap döngüsünü başlatır
+# 3) Index your documents, then ask
+python3 ingest.py      # embeds everything in docs/ into knowledge.db
+python3 main.py         # starts the Q&A loop
 ```
 
-## Dosya yapısı
+> `foundry-local-sdk` uses the `X | None` type syntax, which needs Python ≥3.10 (or the `eval_type_backport` package already in `requirements.txt` on older versions).
+
+## Project layout
+
 ```
-proje1-yerel-rag/
-├── docs/            # 6 küçük .md finans dokümanı (bilgi tabanı)
-├── common.py        # chunking, embedding, kosinüs benzerliği yardımcıları
-├── ingest.py         # docs/ → chunk → embed → SQLite
-├── retrieve.py       # soru → embed → en yakın parçaları bul
-├── generate.py       # parçalar + soru → Foundry Local (phi-3.5-mini) → cevap
-├── main.py            # CLI döngüsü
-├── knowledge.db       # (otomatik oluşur, ingest.py ile)
+.
+├── docs/            # your knowledge base (.md / .txt files go here)
+├── common.py        # chunking, embedding, cosine-similarity helpers
+├── ingest.py        # docs/ -> chunks -> embeddings -> SQLite
+├── retrieve.py      # question -> embedding -> nearest chunks
+├── generate.py      # chunks + question -> Foundry Local -> answer
+├── main.py          # CLI loop
 ├── requirements.txt
 └── README.md
 ```
 
-## Sınırlamalar / gelecek fikirler
-- Chunking basitçe boş satıra göre paragraf bölme; daha gelişmiş (token bazlı, örtüşmeli) chunking eklenebilir.
-- Embedding adımı Foundry Local yerine sentence-transformers kullanıyor; Foundry Local kataloğuna embedding modeli eklenirse geçiş yapılabilir.
-- Şu an sadece CLI arayüz var; Streamlit/HTML arayüz, çoklu dil desteği ve kaynak alıntısı süslemeleri kapsam dışı bırakıldı.
-- Değerlendirme (ölçüm) katmanı yok; doğruluk manuel test ile kontrol edildi.
+## A note on scope (kept honest on purpose)
+
+The original plan called for embedding via Foundry Local's `qwen3-embedding-0.6b`. At setup time, Foundry Local's model catalog had no embedding model available (`foundry model list --filter task=embedding` returned empty), so embedding runs on the fully local, open-source `sentence-transformers` (`all-MiniLM-L6-v2`, ~90 MB) instead. This doesn't break the "runs offline" goal — only the first model download needs internet.
+
+## Limitations / roadmap
+
+- Chunking is a plain blank-line paragraph split; token-aware, overlapping chunking would help.
+- Embedding uses `sentence-transformers` rather than Foundry Local — revisit if/when Foundry Local ships an embedding model.
+- CLI only for now; a Streamlit/HTML UI, multi-language support, and answer-with-citation formatting are out of scope for v0.1.
+- No automated evaluation layer yet — correctness was checked manually.
+- Packaging (a `pip install`-able CLI) and an automated test suite are in progress — see [open issues](../../issues).
+
+## Contributing
+
+Issues and PRs welcome — see `CONTRIBUTING.md` (coming soon) or just open an issue with what you'd like to change.
+
+## License
+
+[MIT](LICENSE)
