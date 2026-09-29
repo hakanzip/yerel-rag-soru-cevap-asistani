@@ -30,9 +30,10 @@ foundry service start
 # 3) phi-3.5-mini modelini indir
 foundry model download phi-3.5-mini
 
-# 4) CLI'ı kur (düzenlenebilir mod — PyPI yayınına kadar, bkz. yol haritası)
+# 4) CLI'ı kur
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
+pip install local-rag-qa
+# — ya da yerel bir geliştirme kopyası için: pip install -e .
 ```
 > Not: `foundry-local-sdk`, Python 3.9'da kullanılamayan `X | None` tip söz dizimini kullanıyor. Python 3.10 altındaysanız `eval_type_backport` paketi (pyproject.toml'da koşullu bağımlılık olarak zaten tanımlı) bunu otomatik düzeltir.
 
@@ -63,11 +64,12 @@ local-rag-qa ask        # soru-cevap döngüsünü başlatır
 - Embedding adımı Foundry Local yerine sentence-transformers kullanıyor; Foundry Local kataloğuna embedding modeli eklenirse geçiş yapılabilir.
 - Şu an sadece CLI arayüz var; Streamlit/HTML arayüz, çoklu dil desteği ve kaynak alıntısı süslemeleri kapsam dışı bırakıldı.
 - Değerlendirme (ölçüm) katmanı yok; doğruluk manuel test ile kontrol edildi.
-- `pip install` ile kurulabilir bir CLI olarak paketlendi (`pyproject.toml` + `local-rag-qa` komutu); henüz PyPI'da yayınlanmadı — o zamana kadar bir klondan `pip install -e .`.
 - Otomatik testler sadece saf-mantık yardımcılarını (chunking, kosinüs benzerliği) kapsıyor; ingest/retrieve/generate henüz kapsanmıyor çünkü çalışan bir Foundry Local örneği gerektiriyorlar.
 
+Bu maddeler ve diğer fikirler için [açık issue'lara](https://github.com/hakanzip/yerel-rag-soru-cevap-asistani/issues) bak, birkaçı `good first issue` etiketli.
+
 ## Katkı
-Issue ve PR'lara açığız — `CONTRIBUTING.md` (yakında) ya da doğrudan bir issue açarak neyi değiştirmek istediğini belirtebilirsin.
+Issue ve PR'lara açığız — kurulum ve test için [CONTRIBUTING.md](CONTRIBUTING.md)'ye bak, ya da doğrudan bir issue açarak neyi değiştirmek istediğini belirtebilirsin. Bu proje [Contributor Covenant](CODE_OF_CONDUCT.md)'u takip eder.
 
 ## Lisans
 [MIT](LICENSE)

@@ -26,9 +26,10 @@ brew install foundrylocal
 foundry service start
 foundry model download phi-3.5-mini
 
-# 2) Install the CLI (editable, until the PyPI release lands — see roadmap)
+# 2) Install the CLI
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e .
+pip install local-rag-qa
+# — or, for a local dev checkout instead: pip install -e .
 
 # 3) Put your documents in docs/, then index and ask
 local-rag-qa ingest    # embeds everything in docs/ into knowledge.db
@@ -63,12 +64,13 @@ The original plan called for embedding via Foundry Local's `qwen3-embedding-0.6b
 - Embedding uses `sentence-transformers` rather than Foundry Local — revisit if/when Foundry Local ships an embedding model.
 - CLI only for now; a Streamlit/HTML UI, multi-language support, and answer-with-citation formatting are out of scope for v0.1.
 - No automated evaluation layer yet — correctness was checked manually.
-- Packaged as a `pip install`-able CLI (`pyproject.toml` + `local-rag-qa` entry point); not yet published to PyPI — `pip install -e .` from a clone until then.
 - Automated tests cover the pure-logic helpers (chunking, cosine similarity); ingest/retrieve/generate aren't covered yet since they need a live Foundry Local instance.
+
+See the [open issues](https://github.com/hakanzip/yerel-rag-soru-cevap-asistani/issues) for these and other ideas, several tagged `good first issue`.
 
 ## Contributing
 
-Issues and PRs welcome — see `CONTRIBUTING.md` (coming soon) or just open an issue with what you'd like to change.
+Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for setup and testing, or just open an issue with what you'd like to change. This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ## License
 
